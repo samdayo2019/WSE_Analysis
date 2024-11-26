@@ -1,0 +1,91 @@
+{
+    "model_types": [
+        {
+            "model_name": "LLama3.1",
+            "models": [
+                {
+                    "name": "LLama3-8B",
+                    "vocab_size": 128000,
+                    "layers": 32,
+                    "emb_dim": 4096,
+                    "num_attention_heads": 32,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 14336,
+                    "ffn_layers": 3
+                },
+                {
+                    "name": "LLama3-70B",
+                    "vocab_size": 128000,
+                    "layers": 80,
+                    "emb_dim": 8192,
+                    "num_attention_heads": 64,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 28672,
+                    "ffn_layers": 3
+                },
+                {
+                    "name": "LLama3-405B",
+                    "vocab_size": 128000,
+                    "layers": 126,
+                    "emb_dim": 16384,
+                    "num_attention_heads": 128,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 53248,
+                    "ffn_layers": 3
+                },
+                {
+                    "name": "LLama3-3.5T",
+                    "vocab_size": 128000,
+                    "layers": 256,
+                    "emb_dim": 32768,
+                    "num_attention_heads": 256,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 114688,
+                    "ffn_layers": 3
+                }
+            ]
+        },
+        {
+            "model_name": "LLama2",
+            "models": [
+                {
+                    "name": "LLama2-7B",
+                    "vocab_size": 32000,
+                    "layers": 32,
+                    "emb_dim": 4096,
+                    "num_attention_heads": 32,
+                    "num_kv_heads": 32,
+                    "head_dim": 128,
+                    "ffn_dim": 11008,
+                    "ffn_layers": 3
+                },
+                {
+                    "name": "LLama2-13B",
+                    "vocab_size": 32000,
+                    "layers": 40,
+                    "emb_dim": 5120,
+                    "num_attention_heads": 40,
+                    "num_kv_heads": 40,
+                    "head_dim": 128,
+                    "ffn_dim": 13824,
+                    "ffn_layers": 3
+                },
+                {
+                    "name": "LLama3-70B",
+                    "vocab_size": 32000,
+                    "layers": 80,
+                    "emb_dim": 8192,
+                    "num_attention_heads": 64,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 28672,
+                    "ffn_layers": 3
+                }
+            ]
+        }
+    ]
+}
