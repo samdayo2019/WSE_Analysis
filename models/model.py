@@ -11,6 +11,17 @@ class LLMModel:
         self.head_dim = kwargs.get('head_dim', 0)
         self.ffn_dim = kwargs.get('ffn_dim', 0)
         self.ffn_layers = kwargs.get('ffn_layers', 0)
+    
+    def display(self):
+        print(f"  Model: {self.name}")
+        print(f"  Vocab Size: {self.vocab_size}")
+        print(f"  Layers: {self.layers}")
+        print(f"  Embedding Dimension: {self.emb_dim}")
+        print(f"  Attention Heads: {self.num_attention_heads}")
+        print(f"  KV Heads: {self.num_kv_heads}")
+        print(f"  Head Dimension: {self.head_dim}")
+        print(f"  Feedforward Dimension: {self.ffn_dim}")
+        print(f"  Feedforward Layers: {self.ffn_layers}")
 
 def load_llm_model(model_path):
     with open(model_path, 'r') as f:
