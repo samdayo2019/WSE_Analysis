@@ -27,7 +27,7 @@ def plot_model_chip_requirements(models, weight_density, weight_tiers, kv_densit
     chip_sizes = {"reticle": 800, "mobile": 80}
     
     # User and model size ranges
-    user_range = [2 ** (i) for i in range(11) if 2 ** i <= 1024]
+    user_range = np.arange(1, 257, 8)
     model_sizes = []
 
     # Prepare data for plotting
@@ -70,7 +70,7 @@ def plot_model_chip_requirements(models, weight_density, weight_tiers, kv_densit
                 })
 
     # Create the plot
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(14, 8))
 
     # custom colormap from cool to warm (blue to red)
     cmap = plt.cm.get_cmap("coolwarm")
@@ -79,8 +79,8 @@ def plot_model_chip_requirements(models, weight_density, weight_tiers, kv_densit
     # Plot data points
     scatter = None
     for dp in data_points:
-        scatter = ax.scatter(dp['model_size'], dp['users'], c=[cmap(norm(dp['num_reticle_chips']))], s=100, edgecolors='k', alpha=0.8)
-        ax.text(dp['model_size'], dp['users'], f"{int(dp['num_reticle_chips'])}", fontsize=8, ha='center', va='center', color='black')
+        scatter = ax.scatter(dp['model_size'], dp['users'], c=[cmap(norm(dp['num_reticle_chips']))], s=35, edgecolors='k', alpha=0.8)
+        #ax.text(dp['model_size'], dp['users'], f"{int(dp['num_reticle_chips'])}", fontsize=16, ha='center', va='center', color='black')
     
     # Colorbar setup
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -92,13 +92,17 @@ def plot_model_chip_requirements(models, weight_density, weight_tiers, kv_densit
     x_ticks = sorted(set(dp['model_size'] for dp in data_points))
     x_labels = [f"{size: .1f} GB" for size in x_ticks]
     ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_labels)
+    ax.set_xticklabels(x_labels, rotation=90)  # Rotate x-axis labels
+    ax.set_xlim(left=min(x_ticks), right=max(x_ticks) * 1.2)  # Add padding on the right
 
+    # Y-axis settings
+    ax.set_ylim(bottom=0, top=256)  # Extend to 128 users
+    # ax.yaxis.set_major_locator(plt.MultipleLocator(10))  # Tick every 10 users
     # Plot settings
     ax.set_xlabel("Model Size (Number of Parameters in Billions)")
     ax.set_ylabel("Number of Users")
     ax.set_title("Chip Requirements for LLama3 Models")
-    ax.grid(True)
-    plt.tight_layout()
+#    ax.grid(True)
+    plt.tight_layout(pad=2)
     plt.show()
     plt.savefig("data/chip_requirements.png")

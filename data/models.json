@@ -13,7 +13,8 @@
                     "head_dim": 128,
                     "ffn_dim": 14336,
                     "ffn_layers": 3,
-                    "context_size": 128000
+                    "context_size": 4096, 
+                    "max_context_size": 128000
                 },
                 {
                     "name": "LLama3-70B",
@@ -25,7 +26,8 @@
                     "head_dim": 128,
                     "ffn_dim": 28672,
                     "ffn_layers": 3,
-                    "context_size": 128000
+                    "context_size": 4096,
+                    "max_context_size": 128000
                 },
                 {
                     "name": "LLama3-405B",
@@ -37,7 +39,8 @@
                     "head_dim": 128,
                     "ffn_dim": 53248,
                     "ffn_layers": 3,
-                    "context_size": 128000
+                    "context_size": 4096, 
+                    "max_context_size": 128000
                 },
                 {
                     "name": "LLama3-3.5T",
@@ -49,7 +52,8 @@
                     "head_dim": 128,
                     "ffn_dim": 114688,
                     "ffn_layers": 3,
-                    "context_size": 128000
+                    "context_size": 4096, 
+                    "max_context_size": 128000
                 }
             ]
         },

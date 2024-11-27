@@ -12,14 +12,15 @@ if __name__ == "__main__":
         if model_type["model_name"] == "LLama3.1":
             for model_data in model_type["models"]:
                 llama3_models.append(LLMModel(**model_data))
+
     # Parameters
     weight_density = 0.02  # GB/mm²
     weight_tiers = 64
     kv_density = 0.034     # GB/mm²
     act_density = 0.034    # GB/mm²
     tmacs_per_mm2 = 1.352   # TMACs/mm²
-    w_res = [4, 8, 16]
-    act_res = [4, 8, 16]
+    w_res = [8]
+    act_res = [8]
 
     plotting.plot_model_chip_requirements(llama3_models, weight_density, weight_tiers, kv_density, act_density, tmacs_per_mm2, w_res, act_res)
     """

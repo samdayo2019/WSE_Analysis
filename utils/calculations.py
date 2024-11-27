@@ -28,10 +28,10 @@ def calculate_total_params(model):
 
 def calculate_total_KV_cache_size(model, users):
     # calculate total size of key-value cache (G)
-    # context_len: length of the context; users: number of users
+    # We assume that even if the max context length > context length (the maximum number of tokens than can be processed in parallel), the kv$ must be able to store the maximum context length
     
     # per layer K/V cache
-    kv_cache = 2 * model.num_kv_heads * model.head_dim * model.context_len * users
+    kv_cache = 2 * model.num_kv_heads * model.head_dim * model.max_context_len * users
 
     # total K/V cache for all layers
     total_kv_cache = kv_cache * model.layers
