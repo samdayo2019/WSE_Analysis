@@ -22,21 +22,23 @@ def calculate_total_params(model):
     total_weights = w_tot_layer * model.layers + w_ll
 
     per_layer_weights = [w_ll, w_o, w_q, w_k, w_v, w_ffn]
+
+    # return total weights in GB, total weights per layer in GB, and per layer weights in GB
     return total_weights/1000**3, w_tot_layer/1000**3, [value/1000**3 for value in per_layer_weights]
 
-def calculate_total_KV_cache_size(model, context_len, users):
+def calculate_total_KV_cache_size(model, users):
     # calculate total size of key-value cache (G)
     # context_len: length of the context; users: number of users
     
     # per layer K/V cache
-    kv_cache = 2 * model.num_kv_heads * model.head_dim * context_len * users
+    kv_cache = 2 * model.num_kv_heads * model.head_dim * model.context_len * users
 
     # total K/V cache for all layers
     total_kv_cache = kv_cache * model.layers
 
     return total_kv_cache/1000**3, kv_cache/1000**3
 
-def calculate_activations(model, context_len, input_len, users):
+def calculate_activations(model, input_len, users):
     # calculate total number of activations (G). We assume each layer processes max 1 user
     # max_seq_len: maximum sequence length; users: number of users
     # prefill: batch processing prompts with I input tokens to pre-fill I K/V pair; AR: serially producing O output tokens using I cached K/V pairs
@@ -53,7 +55,7 @@ def calculate_activations(model, context_len, input_len, users):
 
     # per layer attention matrix activations; qkT = QK^T. We exclude the softmax operation for activation calculation
     qkT_prefill = input_len * input_len * model.num_attention_heads
-    qkT_AR = 1 * context_len * model.num_attention_heads
+    qkT_AR = 1 * model.context_len * model.num_attention_heads
 
     # qkTV = (QK^T)V.
     qkTV_prefill = input_len * model.head_dim * model.num_attention_heads
@@ -83,7 +85,7 @@ def calculate_activations(model, context_len, input_len, users):
 
     return max_total_activations/1000**3, total_activations_prefill/1000**3, total_activations_AR/1000**3
 
-def calculate_total_flops(model, context_len, input_len, users):
+def calculate_total_flops(model, input_len, users):
     # calculate total number of FLOPs. We assume each layer processes max 1 user. 
     # context_len: length of the context; users: number of users
     # compute flops count for OI calculations:
@@ -102,11 +104,11 @@ def calculate_total_flops(model, context_len, input_len, users):
 
     # QK^T = QK^T; for prefill Q: I x num_attention_heads x head_dim; K: I x head_dim x num_kv_heads; for AR, Q: 1 x num_attention_heads x head_dim; K: (I  + O) x head_dim x num_kv_heads
     qkT_flops_prefill = 2 * model.head_dim * input_len * input_len * model.num_attention_heads
-    qkT_flops_AR = 2 * model.head_dim * context_len * model.num_attention_heads
+    qkT_flops_AR = 2 * model.head_dim * model.context_len * model.num_attention_heads
 
     # QK^TV = QK^TV; for prefill QKT = I x I x num_attention_heads; V: I x head_dim x num_kv_heads; for AR, Q: 1 x (I + O) * num_attention_heads; V: (I + O) x head_dim x num_kv_heads
     qkTV_flops_prefill = 2 * input_len * model.head_dim * input_len * model.num_attention_heads
-    qkTV_flops_AR = 2 *  context_len * model.head_dim * 1 * model.num_attention_heads
+    qkTV_flops_AR = 2 * model.context_len * model.head_dim * 1 * model.num_attention_heads
 
     # O = Concat(qkTV)Wo; Wo: emb_dim x num_attention_heads x head_dim; for prefill qkTV: I x head_dim x num_attention_heads; for AR qkTV: 1 x head_dim x num_attention_heads
     o_flops_prefill = 2 * model.emb_dim * model.emb_dim * input_len
@@ -125,16 +127,16 @@ def calculate_total_flops(model, context_len, input_len, users):
     total_flops_AR = min(model.layers, users) * (q_flops_AR + kv_flops_AR + qkT_flops_AR + qkTV_flops_AR + o_flops_AR + ffn_flops_AR) + fll_flops_AR
 
     prefill_flops_breakdown.append(min(model.layers, users) * (q_flops_prefill + kv_flops_prefill + o_flops_prefill + ffn_flops_prefill) + fll_flops_prefill)
-    prefill_flops_breakdown.append(min(model.layers, users) * (qkT_flops_prefill + qkTV_flops_prefill + kv_flops_prefill))
     prefill_flops_breakdown.append(total_flops_prefill)
+    prefill_flops_breakdown.append(min(model.layers, users) * (qkT_flops_prefill + qkTV_flops_prefill + kv_flops_prefill))
 
     AR_flops_breakdown.append(min(model.layers, users) * (q_flops_AR + kv_flops_AR + o_flops_AR + ffn_flops_AR) + fll_flops_AR)
+    AR_flops_breakdown.append(total_flops_AR)    
     AR_flops_breakdown.append(min(model.layers, users) * (qkT_flops_AR + qkTV_flops_AR + kv_flops_AR))
-    AR_flops_breakdown.append(total_flops_AR)
 
-    return [value /1000**3 for value in prefill_flops_breakdown], [value/1000**3 for value in AR_flops_breakdown]
+    return max(total_flops_prefill, total_flops_AR)/1000**3, [value /1000**3 for value in prefill_flops_breakdown], [value/1000**3 for value in AR_flops_breakdown]
 
-def calculate_total_mem_transfer(model, context_len, input_len, users):
+def calculate_total_mem_transfer(model, input_len, users):
     # calculate total number of memory transfers. We assume each layer processes max 1 user. 
     # context_len: length of the context; users: number of users
     # compute memory transfer count for OI calculations:
@@ -160,15 +162,15 @@ def calculate_total_mem_transfer(model, context_len, input_len, users):
     qkT_act_mem_transfer_prefill = (input_len * model.head_dim + input_len * input_len) * model.num_attention_heads
     qkT_cache_mem_transfer_prefill = (input_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
   
-    qkT_act_mem_transfer_AR = (1 * model.head_dim + 1 * context_len) * model.num_attention_heads
-    qkT_cache_mem_transfer_AR = (context_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
+    qkT_act_mem_transfer_AR = (1 * model.head_dim + 1 * model.context_len) * model.num_attention_heads
+    qkT_cache_mem_transfer_AR = (model.context_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
 
     # QK^TV = QK^TV; read QK^T from act. mem and V from KV$ and write result to act. mem. For GQA, each KV$ is reach G times per group, for n_kv groups with n_h/n_kv heads per group
     qkTV_act_mem_transfer_prefill = (input_len * input_len + input_len * model.head_dim) * model.num_attention_heads
     qkTV_cache_mem_transfer_prefill = (input_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
 
-    qkTV_act_mem_transfer_AR = (1 * context_len + 1 * model.head_dim) * model.num_attention_heads
-    qkTV_cache_mem_transfer_AR = (context_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
+    qkTV_act_mem_transfer_AR = (1 * model.context_len + 1 * model.head_dim) * model.num_attention_heads
+    qkTV_cache_mem_transfer_AR = (model.context_len * model.head_dim * model.num_kv_heads / model.num_attention_heads) * model.num_attention_heads
 
     # O = Concat(qkTV)Wo; read qkTV from act. mem and Wo from weight mem and write result to act. mem.
     o_act_mem_transfer_prefill = input_len * model.head_dim * model.num_attention_heads + input_len * model.emb_dim
@@ -200,17 +202,17 @@ def calculate_total_mem_transfer(model, context_len, input_len, users):
 
     return [value/1000**3 for value in prefill_mem_transfer_breakdown], [value/1000**3 for value in AR_mem_transfer_breakdown]
 
-def calculate_storage(model, w_res, act_res, context_len, input_len, users):
+#def calculate_storage(model, w_res, act_res, input_len, users):
     # calculate weight storage, KV$, and activation storage in GB
     # w_res: weight resolution in bits; act_res: activation resolution in bits
-    total_weights, total_kv_cache, total_activations = calculate_total_params(model)[0], calculate_total_KV_cache_size(model, context_len, users)[0], calculate_activations(model, context_len, input_len, users)[0]
+    total_weights, total_kv_cache, total_activations = calculate_total_params(model)[0], calculate_total_KV_cache_size(model, users)[0], calculate_activations(model, input_len, users)[0]
     weight_storage = total_weights * (w_res / 8)
     
     kv_storage = total_kv_cache * (act_res / 8)
 
     act_storage = total_activations * (act_res / 8)
 
-    return weight_storage, kv_storage, act_storage
+    return weight_storage, act_storage, kv_storage
 
 
 

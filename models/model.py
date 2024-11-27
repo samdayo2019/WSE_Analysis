@@ -11,6 +11,7 @@ class LLMModel:
         self.head_dim = kwargs.get('head_dim', 0)
         self.ffn_dim = kwargs.get('ffn_dim', 0)
         self.ffn_layers = kwargs.get('ffn_layers', 0)
+        self.context_len = kwargs.get('context_size', 0)
     
     def display(self):
         print(f"  Model: {self.name}")
@@ -22,6 +23,7 @@ class LLMModel:
         print(f"  Head Dimension: {self.head_dim}")
         print(f"  Feedforward Dimension: {self.ffn_dim}")
         print(f"  Feedforward Layers: {self.ffn_layers}")
+        print(f"  Context Length: {self.context_len}")
 
 def load_llm_model(model_path):
     with open(model_path, 'r') as f:
