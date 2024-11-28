@@ -1,4 +1,4 @@
-import json
+import hjson
 
 class LLMModel:
     def __init__(self, **kwargs):
@@ -29,14 +29,14 @@ class LLMModel:
 
 def load_llm_model(model_path):
     with open(model_path, 'r') as f:
-        model_config = json.load(f)
+        model_config = hjson.load(f)
     return model_config
 
 def parse_models_by_type(json_data):
     set_of_models = {}
-    for model_types in json_data["model_types"]:
-        model_type = model_types["model_name"]
-        models = [LLMModel(**model) for model in model_types["models"]]
+    for model_family in json_data["model_families"]:
+        model_type = model_family["family_name"]
+        models = [LLMModel(**model) for model in model_family["models"]]
         set_of_models[model_type] = models
     return set_of_models
 

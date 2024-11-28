@@ -1,7 +1,7 @@
 {
-    "model_types": [
+    "model_families": [
         {
-            "model_name": "LLama3.1",
+            "family_name": "LLama3.1",
             "models": [
                 {
                     "name": "LLama3-8B",
@@ -13,8 +13,8 @@
                     "head_dim": 128,
                     "ffn_dim": 14336,
                     "ffn_layers": 3,
-                    "context_size": 4096, 
-                    "max_context_size": 128000
+                    "context_size": 4096, // JUNGVI: Confusing, what is the max context length then?
+                    "max_context_size": 128000 
                 },
                 {
                     "name": "LLama3-70B",
@@ -58,7 +58,38 @@
             ]
         },
         {
-            "model_name": "LLama2",
+            "family_name": "LLama3",
+            "models": [
+                {
+                    "name": "LLama3-8B",
+                    "vocab_size": 128000,
+                    "layers": 32,
+                    "emb_dim": 4096,
+                    "num_attention_heads": 32,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 14336,
+                    "ffn_layers": 3,
+                    "context_size": 4096,
+                    "max_context_size": 8000
+                },
+                {
+                    "name": "LLama3-70B",
+                    "vocab_size": 128000,
+                    "layers": 80,
+                    "emb_dim": 8192,
+                    "num_attention_heads": 64,
+                    "num_kv_heads": 8,
+                    "head_dim": 128,
+                    "ffn_dim": 28672,
+                    "ffn_layers": 3,
+                    "context_size": 4096,
+                    "max_context_size": 8000
+                }
+            ]
+        },
+        {
+            "family_name": "LLama2",
             "models": [
                 {
                     "name": "LLama2-7B",
@@ -85,7 +116,7 @@
                     "context_size": 4000
                 },
                 {
-                    "name": "LLama3-70B",
+                    "name": "LLama2-70B",
                     "vocab_size": 32000,
                     "layers": 80,
                     "emb_dim": 8192,

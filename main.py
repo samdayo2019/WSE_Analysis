@@ -6,16 +6,19 @@ INPUT_LEN = 1024
 USERS = 256
 
 if __name__ == "__main__":
-    json_data = load_llm_model("data/models.json")
-    llama3_models = []
-    for model_type in json_data["model_types"]:
-        if model_type["model_name"] == "LLama3.1":
-            for model_data in model_type["models"]:
-                llama3_models.append(LLMModel(**model_data))
+    model_data = load_llm_model("data/models.hjson")
+
+    for model_type in model_data["model_families"]:
+        if model_type["family_name"] == "LLama3.1":
+            llama3_1_models = [LLMModel(**model) for model in model_type["models"]]
+        if model_type["family_name"] == "LLama3":
+            llama3_models = [LLMModel(**model) for model in model_type["models"]]
+        if model_type["family_name"] == "LLama2":
+            llama2_models = [LLMModel(**model) for model in model_type["models"]]
 
     # Parameters
     weight_density = 0.02  # GB/mm²
-    weight_tiers = 64
+    weight_tiers = 64      # JUNGVI: What does this represents
     kv_density = 0.034     # GB/mm²
     act_density = 0.034    # GB/mm²
     tmacs_per_mm2 = 1.352   # TMACs/mm²
